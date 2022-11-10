@@ -40,6 +40,14 @@ spec:
       labels:
         app: kuard
     spec:
+      initContainers:
+      - image: artw/krestic-restore
+        name: krestic-restore
+        envFrom: 
+        - secretRef:
+            name: restic-secrets
+        - configMapRef:
+            name: restic-config
       containers:
       - image: gcr.io/kuar-demo/kuard-amd64:1
         name: kuard
