@@ -20,9 +20,15 @@ test -z "${HOOK_POST}"         && HOOK_POST="echo backup ended"
 
 eval ${HOOK_PRE} || true
 
+
+# https://mariadb.com/kb/en/mariadb-environment-variables
+# https://dev.mysql.com/doc/refman/8.0/en/environment-variables.html
+MYSQL_PWD=${MYSQL_PASSWORD}
+MYSQL_TCP_PORT=${MYSQL_PORT}
+
 BACKUP_FAILED=0
 for DB in ${MYSQL_DBS}; do
-  mysqldump -u${MYSQL_USER} -p${MYSQL_PASSWORD} -h${MYSQL_HOST} -P ${MYSQL_PORT} ${_MYSQLDUMP_FLAGS} ${MYSQLDUMP_FLAGS} $DB | \
+  mysqldump -u${MYSQL_USER} -P ${MYSQL_PORT} ${_MYSQLDUMP_FLAGS} ${MYSQLDUMP_FLAGS} $DB | \
     restic backup -v --stdin --tag ${RESTIC_TAGS},db:${DB} --stdin-filename ${DB}.sql ${RESTIC_EXTRA_FLAGS} \
     || BACKUP_FAILED=1
 done
@@ -34,3 +40,4 @@ else
 fi
 
 eval ${HOOK_POST} || true
+
