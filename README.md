@@ -57,11 +57,12 @@ RESTIC_PASSWORD="MyVeryLongAndVerySecureResticPassword"
 EOF
 
 docker run -ti --rm  --env-file=my-repo.env -v /data:/data artw/krestic-base
+restic snapshots
 ```
 
 run a pod with mysql image and set env from secrets to restore the database
 ```
- kubectl run restic --image=artw/restic-mysql --overrides='{"apiVersion":"v1","spec":{"containers":[{"name":"restic","envFrom":[{"secretRef":{"name":"restic-secrets"}},{"secretRef":{"name":"mysql-secrets"}},{"configMapRef":{"name":"restic-config"}}]}]}}' --override-type='strategic' -- sh
+kubectl run --rm -ti restic --image=artw/restic-mysql --overrides='{"apiVersion":"v1","spec":{"containers":[{"name":"restic","envFrom":[{"secretRef":{"name":"restic-secrets"}},{"secretRef":{"name":"mysql-secrets"}},{"configMapRef":{"name":"restic-config"}}]}]}}' --override-type='strategic' -- sh
 
 restic dump --tags mysupercluster,db:mydb latest /mydb.sql | mysql mydb
 ```
