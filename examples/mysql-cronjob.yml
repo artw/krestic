@@ -21,9 +21,9 @@ metadata:
 type: Opaque
 stringData:
   MYSQL_HOST: "my.secure.mysql.endpoint.wtf"
-  MYSQL_PORT: "3307"
+  MYSQL_TCP_PORT: "3307"
   MYSQL_USER: "admin"
-  MYSQL_PASSWORD: "MyVeryComplexAdminPassword"
+  MYSQL_PWD: "MyVeryComplexAdminPassword"
   MYSQL_DBS: "dev prod stage"
 
 ---
@@ -51,7 +51,7 @@ spec:
         spec:
           containers:
           - name: krestic-mysql
-            image: artw/restic-mysql
+            image: artw/krestic-mysql
             env:
             envFrom: 
             - secretRef:
