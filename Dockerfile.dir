@@ -2,6 +2,7 @@ FROM alpine:latest
 RUN apk update \
   && apk add restic curl \
   && rm -rf /var/cache/apk/*
-COPY backup.sh /backup.sh
+
+COPY backup-dir.sh /backup.sh
 
 CMD ["/backup.sh"]
