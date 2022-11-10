@@ -4,13 +4,13 @@ Simple shell wrappers for [restic](https://github.com/restic/restic) and a set o
 The thing does not do much apart from passing arguments to restic. Please refer to [Restic Documentation](https://restic.readthedocs.io/en/stable/index.html) for actual docs
 
 ## containers / scripts
-| image                | script          | purpose                                                              |
-|----------------------|-----------------|----------------------------------------------------------------------|
-| artw/krestic-base    |                 | just restic and curl, useful for restore and maintenance             |
-| artw/krestic-dir     | backup-dir.sh   | runs restic backup for every dir                                     |
-| artw/krestic-mysql   | backup-mysql.sh | runs mysqldump and streams it to restic backup --stdin               |
-| artw/krestic-cron    | backup-cron.sh  | run backup-dir.sh in alpines busybox crond (e.g. sidecar for Volume) |
-| artw/krestic-restore | restore-dir.sh  | restores latest snapshot matching tags (e.g. initContainer)          |
+| image                    | script          | purpose                                                              |
+|--------------------------|-----------------|----------------------------------------------------------------------|
+| artw/krestic-base        |                 | just restic and curl, useful for restore and maintenance             |
+| artw/krestic-dir         | backup-dir.sh   | runs restic backup for every dir                                     |
+| artw/krestic-mysql       | backup-mysql.sh | runs mysqldump and streams it to restic backup --stdin               |
+| artw/krestic-cron        | backup-cron.sh  | run backup-dir.sh in alpines busybox crond (e.g. sidecar for Volume) |
+| artw/krestic-dir-restore | restore-dir.sh  | restores latest snapshot matching tags (e.g. initContainer)          |
 
 
 ## config
@@ -39,12 +39,32 @@ The thing does not do much apart from passing arguments to restic. Please refer 
 
 
 ## examples
+### kubernetes
 | example               | scenario                                                                                  |
 |-----------------------|-------------------------------------------------------------------------------------------|
 | cron-sidecar.yml      | run a sidecar that backs up a kubernetes volume every minute                              |
 | cron-sidecar-init.yml | same as above, but restore the latest snapshot on startup (poor man's persistent storage) |   
 | mysql-cronjob.yml     | backup a db with mysqldump with a kubernetes cronjob                                      |
 
+### adhoc
+run a base container with env preset for running restic manually e.g, restoring or doing maintenance on the repo
+```
+cat << EOF > my-repo.env
+AWS_ACCESS_KEY_ID="minio"
+AWS_SECRET_ACCESS_KEY="MyVerySecureAccessKey"
+RESTIC_REPOSITORY="s3:http://s3.minio.wtf:9000"
+RESTIC_PASSWORD="MyVeryLongAndVerySecureResticPassword"
+EOF
+
+docker run -ti --rm  --env-file=my-repo.env -v /data:/data artw/krestic-base
+```
+
+run a pod with mysql image and set env from secrets to restore the database
+```
+ kubectl run restic --image=artw/restic-mysql --overrides='{"apiVersion":"v1","spec":{"containers":[{"name":"restic","envFrom":[{"secretRef":{"name":"restic-secrets"}},{"secretRef":{"name":"mysql-secrets"}},{"configMapRef":{"name":"restic-config"}}]}]}}' --override-type='strategic' -- sh
+
+restic dump --tags mysupercluster,db:mydb latest /mydb.sql | mysql mydb
+```
 
 ## building
-`make` builds images for linux/amd64 and linux/aarch64 and pushes them to hub.docker.com registry. Requires *Docker *with *buildx* plugin
+`make` builds images for *linux/amd64* and *linux/aarch64* and pushes them to hub.docker.com registry. Requires *Docker* with *buildx* plugin
