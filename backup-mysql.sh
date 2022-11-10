@@ -21,10 +21,10 @@ eval ${HOOK_PRE}
 
 ERROR=0
 for DB in ${MYSQL_DBS}; do
-  mysqldump -u${MYSQL_USER} ${_MYSQLDUMP_FLAGS} ${MYSQLDUMP_FLAGS} $DB | \
+  mysqldump -u${MYSQL_USER} -h${MYSQL_HOST} ${_MYSQLDUMP_FLAGS} ${MYSQLDUMP_FLAGS} $DB | \
     restic backup -v --stdin --tag ${RESTIC_TAGS},db:${DB} --stdin-filename ${DB}.sql ${RESTIC_EXTRA_FLAGS} \
     || ERROR=1
-  if [! -z ${RESTIC_FORGET_FLAGS} ]; then
+  if [ ! -z ${RESTIC_FORGET_FLAGS} ]; then
     restic forget --tag ${RESTIC_TAGS},dir:${DIR} ${RESTIC_FORGET_FLAGS} 
   fi
 done
