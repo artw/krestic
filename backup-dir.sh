@@ -12,7 +12,7 @@ test -z "${HOOK_OK}"           && HOOK_OK="echo backup succeeded"
 test -z "${HOOK_FAIL}"         && HOOK_FAIL="echo backup failed"
 test -z "${HOOK_POST}"         && HOOK_POST="echo backup ended"
 
-eval ${HOOK_PRE} || true
+eval ${HOOK_PRE}
 
 for exclude in $RESTIC_EXCLUDES; do
   EXCLUDE_ARGS="${EXCLUDE_ARGS} -e ${exclude}"
@@ -33,6 +33,6 @@ else
   eval ${HOOK_OK}
 fi
 
-eval ${HOOK_POST} || true
+eval ${HOOK_POST}
 
 exit $ERROR
