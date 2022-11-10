@@ -1,6 +1,6 @@
-FROM alpine:latest
+FROM artw/krestic-base
 RUN apk update \
-  && apk add mysql-client restic curl \
+  && apk add mysql-client \
   && rm -rf /var/cache/apk/*
 
 COPY backup-mysql.sh /backup.sh

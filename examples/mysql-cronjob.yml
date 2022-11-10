@@ -1,0 +1,64 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: restic-config
+data:
+  RESTIC_PROGRESS_FPS: "0.1"
+  RESTIC_TAGS: "test"
+  CRON_TIME: "* * * * *"
+  RESTIC_EXTRA_FLAGS: "-vvv"
+  HOOK_PRE: "curl -s -X POST my.webhook.api/info --data '<b>mysql</>: backup started'"
+  HOOK_OK: "curl -s -X POST my.webhook.api/info --data '<b>mysql</>: backup succeeded'"
+  HOOK_FAIL: "curl -s -X POST my.webhook.api/alert --data '<b>mysql</>: backup failed'"
+  HOOK_POST: "curl -s -X POST my.webhook.api/info --data '<b>mysql</>: backup ended'"
+
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: mysql-secrets
+type: Opaque
+stringData:
+  MYSQL_HOST: "my.secure.mysql.endpoint.wtf"
+  MYSQL_PORT: "3307"
+  MYSQL_USER: "admin"
+  MYSQL_PASSWORD: "MyVeryComplexAdminPassword"
+  MYSQL_DBS: "dev prod stage"
+
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: restic-secrets
+type: Opaque
+stringData:
+  AWS_ACCESS_KEY_ID: "minio"
+  AWS_SECRET_ACCESS_KEY: "MyVerySecureAccessKey"
+  RESTIC_REPOSITORY: "s3:http://s3.minio.wtf:9000"
+  RESTIC_PASSWORD: "MyVeryLongAndVerySecureResticPassword"
+
+---
+kind: CronJob
+apiVersion: batch/v1
+metadata:
+  name: krestic-mysql
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: krestic-mysql
+            image: artw/restic-mysql
+            env:
+            envFrom: 
+            - secretRef:
+                name: restic-secrets
+            - secretRef:
+                name: mysql-secrets
+            - configMapRef:
+                name: restic-config
+          restartPolicy: Never
+      backoffLimit: 2

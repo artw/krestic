@@ -1,5 +1,6 @@
 FROM artw/krestic-base
 
 COPY backup-dir.sh /backup.sh
+COPY cron.sh /cron.sh
 
-CMD ["/backup.sh"]
+CMD ["/cron.sh"]

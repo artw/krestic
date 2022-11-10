@@ -1,0 +1,60 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: restic-config
+data:
+  RESTIC_PROGRESS_FPS: "0.1"
+  RESTIC_TAGS: "test"
+  RESTIC_DIRS: "/tmp /opt /home"
+  RESTIC_EXTRA_FLAGS: "-vvv"
+  CRON_TIME: "* * * * *"
+  HOOK_OK: "curl -s -X POST my.webhook.api/info --data '<b>kuard</>: backup complete'"
+  HOOK_FAIL: "curl -s -X POST my.webhook.api/alert --data '<b>kuard</>: backup failed'"
+
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: restic-secrets
+type: Opaque
+stringData:
+  AWS_ACCESS_KEY_ID: "minio"
+  AWS_SECRET_ACCESS_KEY: "MyVerySecureAccessKey"
+  RESTIC_REPOSITORY: "s3:http://s3.minio.wtf:9000"
+  RESTIC_PASSWORD: "MyVeryLongAndVerySecureResticPassword"
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    app: kuard
+  name: kuard
+spec:
+  selector:
+    matchLabels:
+      app: kuard
+  template:
+    metadata:
+      labels:
+        app: kuard
+    spec:
+      initContainers:
+      - image: artw/krestic-restore
+        name: krestic-restore
+        envFrom: 
+        - secretRef:
+            name: restic-secrets
+        - configMapRef:
+            name: restic-config
+      containers:
+      - image: gcr.io/kuar-demo/kuard-amd64:1
+        name: kuard
+      - image: artw/krestic-cron
+        name: krestic-sidecar
+        envFrom: 
+        - secretRef:
+            name: restic-secrets
+        - configMapRef:
+            name: restic-config
