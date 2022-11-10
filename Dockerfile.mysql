@@ -1,0 +1,8 @@
+FROM alpine:latest
+RUN apk update \
+  && apk add mysql-client restic curl \
+  && rm -rf /var/cache/apk/*
+
+COPY backup-mysql.sh /backup.sh
+
+CMD ["/backup.sh"]
