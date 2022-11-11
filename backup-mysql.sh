@@ -10,6 +10,7 @@ test -z "${_MYSQLDUMP_FLAGS}"  && _MYSQLDUMP_FLAGS="--single-transaction"
 
 test -z "${RESTIC_PASSWORD}"   && echo "RESTIC_PASSWORD is missing"   && exit 1
 test -z "${RESTIC_REPOSITORY}" && echo "RESTIC_REPOSITORY is missing" && exit 1
+test -z "${RESTIC_HOST}"       && echo "RESTIC_HOST is missing"       && exit 1
 test -z "${RESTIC_TAGS}"       && echo "RESTIC_TAGS is missing"       && exit 1
 
 test -z "${HOOK_PRE}"          && HOOK_PRE="echo backup started"
@@ -22,10 +23,9 @@ eval ${HOOK_PRE}
 ERROR=0
 for DB in ${MYSQL_DBS}; do
   mysqldump -u${MYSQL_USER} -h${MYSQL_HOST} ${_MYSQLDUMP_FLAGS} ${MYSQLDUMP_FLAGS} $DB | \
-    restic backup -v --stdin --tag ${RESTIC_TAGS},db:${DB} --stdin-filename ${DB}.sql ${RESTIC_EXTRA_FLAGS} \
-    || ERROR=1
-  if [ ! -z ${RESTIC_FORGET_FLAGS} ]; then
-    restic forget --tag ${RESTIC_TAGS},dir:${DIR} ${RESTIC_FORGET_FLAGS} 
+  restic backup --stdin --host ${RESTIC_HOST} --tag ${RESTIC_TAGS},db:${DB} --stdin-filename ${DB}.sql ${RESTIC_EXTRA_FLAGS} || ERROR=1
+  if [ -n "${RESTIC_FORGET_FLAGS}" ]; then
+    restic forget --host ${RESTIC_HOST} --tag ${RESTIC_TAGS},db:${DB} ${RESTIC_FORGET_FLAGS} 
   fi
 done
 

@@ -20,6 +20,7 @@ The thing does not do much apart from passing arguments to restic. Please refer 
 |---------------------|--------------------------------------------------------------------------|-------|----------|
 | RESTIC_PASSWORD     | restic repo encryption passphrase (restic standard)                      | *     | x        |
 | RESTIC_REPOSITORY   | restic repo path (restic standard)                                       | *     | x        |
+| RESTIC_HOST         | restic hostname for pruning (passed to --host)                           | *     | x        |
 | RESTIC_TAGS         | restic tags, (csv, passed as --tag)                                      | *     | x        |
 | HOOK_PRE            | command to run before the run (e.g. webhooks)                            | *     |          |
 | HOOK_OK             | command to run on success                                                | *     |          |

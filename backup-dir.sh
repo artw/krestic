@@ -5,6 +5,7 @@ set -o pipefail
 test -z "${RESTIC_DIRS}"       && echo "RESTIC_DIRS is missing"       && exit 1
 test -z "${RESTIC_PASSWORD}"   && echo "RESTIC_PASSWORD is missing"   && exit 1
 test -z "${RESTIC_REPOSITORY}" && echo "RESTIC_REPOSITORY is missing" && exit 1
+test -z "${RESTIC_HOST}"       && echo "RESTIC_HOST is missing"       && exit 1
 test -z "${RESTIC_TAGS}"       && echo "RESTIC_TAGS is missing"       && exit 1
 
 test -z "${HOOK_PRE}"          && HOOK_PRE="echo backup started"
@@ -20,10 +21,9 @@ done
 
 ERROR=0
 for DIR in ${RESTIC_DIRS}; do
-  restic backup --tag ${RESTIC_TAGS},dir:${DIR} ${EXCLUDE_ARGS} ${RESTIC_BACKUP_FLAGS} $DIR \
-  || ERROR=1
-  if [ ! -z ${RESTIC_FORGET_FLAGS} ]; then
-    restic forget --tag ${RESTIC_TAGS},dir:${DIR} ${RESTIC_FORGET_FLAGS} 
+  restic backup --host ${RESTIC_HOST} --tag ${RESTIC_TAGS},dir:${DIR} ${EXCLUDE_ARGS} ${RESTIC_BACKUP_FLAGS} $DIR || ERROR=1
+  if [ -n "${RESTIC_FORGET_FLAGS}" ]; then
+    restic forget --host ${RESTIC_HOST} --tag ${RESTIC_TAGS},dir:${DIR} ${RESTIC_FORGET_FLAGS} 
   fi
 done
 
