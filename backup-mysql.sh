@@ -25,7 +25,7 @@ for DB in ${MYSQL_DBS}; do
   mysqldump -u${MYSQL_USER} -h${MYSQL_HOST} ${_MYSQLDUMP_FLAGS} ${MYSQLDUMP_FLAGS} $DB | \
   restic backup --stdin --host ${RESTIC_HOST} --tag ${RESTIC_TAGS},db:${DB} --stdin-filename ${DB}.sql ${RESTIC_EXTRA_FLAGS} || ERROR=1
   if [ -n "${RESTIC_FORGET_FLAGS}" ]; then
-    restic forget --host ${RESTIC_HOST} --tag ${RESTIC_TAGS},db:${DB} ${RESTIC_FORGET_FLAGS} 
+    restic forget --host ${RESTIC_HOST} --tag ${RESTIC_TAGS},db:${DB} ${RESTIC_FORGET_FLAGS}  || ERROR=1
   fi
 done
 

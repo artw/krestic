@@ -23,7 +23,7 @@ ERROR=0
 for DIR in ${RESTIC_DIRS}; do
   restic backup --host ${RESTIC_HOST} --tag ${RESTIC_TAGS},dir:${DIR} ${EXCLUDE_ARGS} ${RESTIC_BACKUP_FLAGS} $DIR || ERROR=1
   if [ -n "${RESTIC_FORGET_FLAGS}" ]; then
-    restic forget --host ${RESTIC_HOST} --tag ${RESTIC_TAGS},dir:${DIR} ${RESTIC_FORGET_FLAGS} 
+    restic forget --host ${RESTIC_HOST} --tag ${RESTIC_TAGS},dir:${DIR} ${RESTIC_FORGET_FLAGS}  || ERROR=1
   fi
 done
 
