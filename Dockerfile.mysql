@@ -1,6 +1,6 @@
 FROM artw/krestic-base
 RUN apk update \
-  && apk add mysql-client \
+  && apk add mysql-client mariadb-connector-c \
   && rm -rf /var/cache/apk/*
 
 COPY backup-mysql.sh /backup.sh
